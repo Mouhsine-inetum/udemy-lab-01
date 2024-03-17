@@ -1,0 +1,11 @@
+using '../infra/loganalytics/main.bicep'
+
+param  application = 'app-insight'
+param  costCenter = '15649'
+param  descp = 'the analytics insight tool'
+param owner = 'all'
+param repo = 'https://dev.azure.com/MouhsineAyi/CICD_Project_Accademicts' 
+param appShort = 'from-devops'
+param domainShort = 'Personal'
+param env = 'dev'
+param version = '1'
