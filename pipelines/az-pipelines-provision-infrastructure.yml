@@ -41,7 +41,7 @@ stages:
             inputs: 
               deploymentScope: 'Resource Group'
               AzureResourceManagerConnection: '${{parameters.serviceConnection}}'
-              action: 'Create or Update Resource Group'
+              action: 'Create Or Update Resource Group'
               resourceGroupName: 'rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${ {parameters.environment }}-$(version)'
               location: '$(location)'
               templateLocation: 'Linked artifact'
