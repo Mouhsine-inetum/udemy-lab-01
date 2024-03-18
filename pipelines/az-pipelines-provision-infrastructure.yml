@@ -42,7 +42,7 @@ stages:
               deploymentScope: 'Resource Group'
               AzureResourceManagerConnection: '${{parameters.serviceConnection}}'
               action: 'Create Or Update Resource Group'
-              resourceGroupName: 'rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${ {parameters.environment }}-$(version)'
+              resourceGroupName: 'rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)'
               location: '$(location)'
               templateLocation: 'Linked artifact'
               csmFile: 'infra/loganalytics/main.json'
