@@ -13,7 +13,7 @@ parameters:
       - dev
       - acc
       - prod
-    
+
 variables:
   - group: ${{ parameters.variableGroup }}
   - name: version
@@ -28,25 +28,25 @@ stages:
         steps:
           - task: AzurePowerShell@5
             inputs:
-              azureSubscription: '${{parameters.serviceConnection}}'
-              ScriptType: 'FilePath'
-              ScriptPath: '$(System.DefaultWorkingDirectory)/scripts/compile-bicep-to-arm.ps1'
-              ScriptArguments: '
-                                -filePath $(System.DefaultWorkingDirectory)/infra/loganalytics `
-                                -bicepTemplate main.bicep `
-                                -outFile main.json'
-              azurePowerShellVersion: 'LatestVersion'
-          
+              azureSubscription: "${{parameters.serviceConnection}}"
+              ScriptType: "FilePath"
+              ScriptPath: "$(System.DefaultWorkingDirectory)/scripts/compile-bicep-to-arm.ps1"
+              ScriptArguments: "
+                -filePath $(System.DefaultWorkingDirectory)/infra/loganalytics `
+                -bicepTemplate main.bicep `
+                -outFile main.json"
+              azurePowerShellVersion: "LatestVersion"
+
           - task: AzureResourceManagerTemplateDeployment@3
-            inputs: 
-              deploymentScope: 'Resource Group'
-              AzureResourceManagerConnection: '${{parameters.serviceConnection}}'
-              action: 'Create Or Update Resource Group'
-              resourceGroupName: 'rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)'
-              location: '$(location)'
-              templateLocation: 'Linked artifact'
-              csmFile: 'infra/loganalytics/main.json'
-              deploymentMode: 'Incremental'
+            inputs:
+              deploymentScope: "Resource Group"
+              AzureResourceManagerConnection: "${{parameters.serviceConnection}}"
+              action: "Create Or Update Resource Group"
+              resourceGroupName: "rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)"
+              location: "$(location)"
+              templateLocation: "Linked artifact"
+              csmFile: "infra/loganalytics/main.json"
+              deploymentMode: "Incremental"
               overrideParameters: >-
                 -owner "$(owner)"
                 -costCenter "$(costCenter)"
@@ -58,3 +58,42 @@ stages:
                 -env "${{ parameters.environment }}"
                 -version "$(version)"
 
+  - stage: StageProvisionInfrastructureDataFactory
+    displayName: "Stage: Provision InfraStructure - Data Factory"
+    dependsOn: StageProvisionInfrastructureLogAnalytics
+    condition: succeeded()
+    jobs:
+      - job: JobProvisionInfrastructureDataFactory
+        displayName: "Job: Provision Infrstructure - Data Factory"
+        steps:
+          - task: AzurePowerShell@5
+            inputs:
+              azureSubscription: "${{parameters.serviceConnection}}"
+              ScriptType: "FilePath"
+              ScriptPath: "$(System.DefaultWorkingDirectory)/scripts/compile-bicep-to-arm.ps1"
+              ScriptArguments: "
+                -filePath $(System.DefaultWorkingDirectory)/infra/data-factory `
+                -bicepTemplate main.bicep `
+                -outFile main.json"
+              azurePowerShellVersion: "LatestVersion"
+
+          - task: AzureResourceManagerTemplateDeployment@3
+            inputs:
+              deploymentScope: "Resource Group"
+              AzureResourceManagerConnection: "${{parameters.serviceConnection}}"
+              action: "Create Or Update Resource Group"
+              resourceGroupName: "rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)"
+              location: "$(location)"
+              templateLocation: "Linked artifact"
+              csmFile: "infra/data-factory/main.json"
+              deploymentMode: "Incremental"
+              overrideParameters: >-
+                -owner "$(owner)"
+                -costCenter "$(costCenter)"
+                -application "$(application)"
+                -descp "$(desc)"
+                -repo "$(repo)"
+                -appShort "$(appShort)"
+                -domainShort "$(domainShort)"
+                -env "${{ parameters.environment }}"
+                -version "$(version)"
