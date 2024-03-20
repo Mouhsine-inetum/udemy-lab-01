@@ -17,7 +17,7 @@ parameters:
 variables:
   - group: ${{ parameters.variableGroup }}
   - name: version
-    value: 001
+    value: 002
   - name: rgName
     value: "rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)"
 

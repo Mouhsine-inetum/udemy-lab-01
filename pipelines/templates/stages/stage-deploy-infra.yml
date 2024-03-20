@@ -2,8 +2,7 @@ parameters:
   - name: stage
     type: string
   - name: dependsOn
-    type: object
-    default: []
+    type: string
   - name: condition
     type: string
     default: succeeded()
