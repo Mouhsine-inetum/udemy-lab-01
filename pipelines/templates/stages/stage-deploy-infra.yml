@@ -43,7 +43,7 @@ parameters:
 
 stages:
   - stage: "${{ parameters.stage }}"
-    displayName: "${{ Stage: Provision Infrastructure - parameters.resource }}"
+    displayName: "Stage: Provision Infrastructure - ${{ parameters.resource }}"
     dependsOn: "${{ parameters.dependsOn }}"
     condition: "${{ parameters.condition }}"
     jobs:
