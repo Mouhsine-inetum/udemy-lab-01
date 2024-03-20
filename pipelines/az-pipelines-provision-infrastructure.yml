@@ -24,7 +24,7 @@ variables:
 stages:
   - template: "./templates/stages/stage-deploy-infra.yml@self"
     parameters:
-      stage: "StageProvisionInfrastructureLogAnalytics"
+      stage: StageProvisionInfrastructureLogAnalytics
       resource: "Log Analytics"
       serviceConnection: "${{ parameters.serviceConnection }}"
       rgName: "$(rgName)"
@@ -42,7 +42,7 @@ stages:
 
   - template: "./templates/stages/stage-deploy-infra.yml@self"
     parameters:
-      stage: "StageProvisionInfrastructureDataFactory"
+      stage: StageProvisionInfrastructureDataFactory
       dependsOn:
         - StageProvisionInfrastructureLogAnalytics
       condition: succeeded()
