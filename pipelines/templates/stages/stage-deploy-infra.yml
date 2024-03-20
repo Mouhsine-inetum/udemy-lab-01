@@ -50,7 +50,7 @@ stages:
       - template: "../jobs/job-deploy-infra.yml@self"
         parameters:
           job: "JobDeployInfrastructure"
-          jobResources: "Log analytics and Data Factory"
+          jobResources: "${{ parameters.resource }}"
           serviceConnection: "${{ parameters.serviceConnection }}"
           infraPath: "${{ parameters.infraPath }}"
           rgName: ${{ parameters.rgName }}

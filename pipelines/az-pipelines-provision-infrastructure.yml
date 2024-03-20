@@ -18,82 +18,123 @@ variables:
   - group: ${{ parameters.variableGroup }}
   - name: version
     value: 001
+  - name: rgName
+    value: "rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)"
 
 stages:
-  - stage: StageProvisionInfrastructureLogAnalytics
-    displayName: "Stage: Provision InfraStructure - Log Analytics"
-    jobs:
-      - job: JobProvisionInfrastructureLogAnalytics
-        displayName: "Job: Provision Infrstructure - Log Analytics"
-        steps:
-          - task: AzurePowerShell@5
-            inputs:
-              azureSubscription: "${{parameters.serviceConnection}}"
-              ScriptType: "FilePath"
-              ScriptPath: "$(System.DefaultWorkingDirectory)/scripts/compile-bicep-to-arm.ps1"
-              ScriptArguments: "
-                -filePath $(System.DefaultWorkingDirectory)/infra/loganalytics `
-                -bicepTemplate main.bicep `
-                -outFile main.json"
-              azurePowerShellVersion: "LatestVersion"
+  - template: "./templates/stages/stage-deploy-infra.yml@self"
+  - parameters:
+      stage: "StageProvisionInfrastructureLogAnalytics"
+      resource: "Log Analytics"
+      serviceConnection: "${{ parameters.serviceConnection }}"
+      rgName: "$(rgName)"
+      infraPath: "infra/loganalytics"
+      location: "$(location)"
+      owner: "$(owner)"
+      costCenter: "$(costCenter)"
+      application: "$(application)"
+      desc: "$(descp)"
+      repo: "$(repo)"
+      appShort: "$(appShort)"
+      domainShort: "$(domainShort)"
+      version: "$(version)"
+      env: "${{ parameters.environment }}"
 
-          - task: AzureResourceManagerTemplateDeployment@3
-            inputs:
-              deploymentScope: "Resource Group"
-              AzureResourceManagerConnection: "${{parameters.serviceConnection}}"
-              action: "Create Or Update Resource Group"
-              resourceGroupName: "rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)"
-              location: "$(location)"
-              templateLocation: "Linked artifact"
-              csmFile: "infra/loganalytics/main.json"
-              deploymentMode: "Incremental"
-              overrideParameters: >-
-                -owner "$(owner)"
-                -costCenter "$(costCenter)"
-                -application "$(application)"
-                -descp "$(desc)"
-                -repo "$(repo)"
-                -appShort "$(appShort)"
-                -domainShort "$(domainShort)"
-                -env "${{ parameters.environment }}"
-                -version "$(version)"
+  - template: "./templates/stages/stage-deploy-infra.yml@self"
+  - parameters:
+      stage: "StageProvisionInfrastructureDataFactory"
+      dependsOn:
+        - StageProvisionInfrastructureLogAnalytics
+      condition: succeeded()
+      resource: "Data Factory"
+      serviceConnection: "${{ parameters.serviceConnection }}"
+      rgName: "$(rgName)"
+      infraPath: "infra/data-factory"
+      location: "$(location)"
+      owner: "$(owner)"
+      costCenter: "$(costCenter)"
+      application: "$(application)"
+      desc: "$(descp)"
+      repo: "$(repo)"
+      appShort: "$(appShort)"
+      domainShort: "$(domainShort)"
+      version: "$(version)"
+      env: "${{ parameters.environment }}"
 
-  - stage: StageProvisionInfrastructureDataFactory
-    displayName: "Stage: Provision InfraStructure - Data Factory"
-    dependsOn: StageProvisionInfrastructureLogAnalytics
-    condition: succeeded()
-    jobs:
-      - job: JobProvisionInfrastructureDataFactory
-        displayName: "Job: Provision Infrstructure - Data Factory"
-        steps:
-          - task: AzurePowerShell@5
-            inputs:
-              azureSubscription: "${{parameters.serviceConnection}}"
-              ScriptType: "FilePath"
-              ScriptPath: "$(System.DefaultWorkingDirectory)/scripts/compile-bicep-to-arm.ps1"
-              ScriptArguments: "
-                -filePath $(System.DefaultWorkingDirectory)/infra/data-factory `
-                -bicepTemplate main.bicep `
-                -outFile main.json"
-              azurePowerShellVersion: "LatestVersion"
+  # - stage: StageProvisionInfrastructureLogAnalytics
+  #   displayName: "Stage: Provision InfraStructure - Log Analytics"
+  #   jobs:
+  #     - job: JobProvisionInfrastructureLogAnalytics
+  #       displayName: "Job: Provision Infrstructure - Log Analytics"
+  #       steps:
+  #         - task: AzurePowerShell@5
+  #           inputs:
+  #             azureSubscription: "${{parameters.serviceConnection}}"
+  #             ScriptType: "FilePath"
+  #             ScriptPath: "$(System.DefaultWorkingDirectory)/scripts/compile-bicep-to-arm.ps1"
+  #             ScriptArguments: "
+  #               -filePath $(System.DefaultWorkingDirectory)/infra/loganalytics `
+  #               -bicepTemplate main.bicep `
+  #               -outFile main.json"
+  #             azurePowerShellVersion: "LatestVersion"
 
-          - task: AzureResourceManagerTemplateDeployment@3
-            inputs:
-              deploymentScope: "Resource Group"
-              AzureResourceManagerConnection: "${{parameters.serviceConnection}}"
-              action: "Create Or Update Resource Group"
-              resourceGroupName: "rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)"
-              location: "$(location)"
-              templateLocation: "Linked artifact"
-              csmFile: "infra/data-factory/main.json"
-              deploymentMode: "Incremental"
-              overrideParameters: >-
-                -owner "$(owner)"
-                -costCenter "$(costCenter)"
-                -application "$(application)"
-                -descp "$(desc)"
-                -repo "$(repo)"
-                -appShort "$(appShort)"
-                -domainShort "$(domainShort)"
-                -env "${{ parameters.environment }}"
-                -version "$(version)"
+  #         - task: AzureResourceManagerTemplateDeployment@3
+  #           inputs:
+  #             deploymentScope: "Resource Group"
+  #             AzureResourceManagerConnection: "${{parameters.serviceConnection}}"
+  #             action: "Create Or Update Resource Group"
+  #             resourceGroupName: "rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)"
+  #             location: "$(location)"
+  #             templateLocation: "Linked artifact"
+  #             csmFile: "infra/loganalytics/main.json"
+  #             deploymentMode: "Incremental"
+  #             overrideParameters: >-
+  #               -owner "$(owner)"
+  #               -costCenter "$(costCenter)"
+  #               -application "$(application)"
+  #               -descp "$(desc)"
+  #               -repo "$(repo)"
+  #               -appShort "$(appShort)"
+  #               -domainShort "$(domainShort)"
+  #               -env "${{ parameters.environment }}"
+  #               -version "$(version)"
+
+  # - stage: StageProvisionInfrastructureDataFactory
+  #   displayName: "Stage: Provision InfraStructure - Data Factory"
+  #   dependsOn: StageProvisionInfrastructureLogAnalytics
+  #   condition: succeeded()
+  #   jobs:
+  #     - job: JobProvisionInfrastructureDataFactory
+  #       displayName: "Job: Provision Infrstructure - Data Factory"
+  #       steps:
+  #         - task: AzurePowerShell@5
+  #           inputs:
+  #             azureSubscription: "${{parameters.serviceConnection}}"
+  #             ScriptType: "FilePath"
+  #             ScriptPath: "$(System.DefaultWorkingDirectory)/scripts/compile-bicep-to-arm.ps1"
+  #             ScriptArguments: "
+  #               -filePath $(System.DefaultWorkingDirectory)/infra/data-factory `
+  #               -bicepTemplate main.bicep `
+  #               -outFile main.json"
+  #             azurePowerShellVersion: "LatestVersion"
+
+  #         - task: AzureResourceManagerTemplateDeployment@3
+  #           inputs:
+  #             deploymentScope: "Resource Group"
+  #             AzureResourceManagerConnection: "${{parameters.serviceConnection}}"
+  #             action: "Create Or Update Resource Group"
+  #             resourceGroupName: "rg-$(companyShort)-$(domainShort)-$(appShort)-$(locationAbbr)-${{ parameters.environment }}-$(version)"
+  #             location: "$(location)"
+  #             templateLocation: "Linked artifact"
+  #             csmFile: "infra/data-factory/main.json"
+  #             deploymentMode: "Incremental"
+  #             overrideParameters: >-
+  #               -owner "$(owner)"
+  #               -costCenter "$(costCenter)"
+  #               -application "$(application)"
+  #               -descp "$(desc)"
+  #               -repo "$(repo)"
+  #               -appShort "$(appShort)"
+  #               -domainShort "$(domainShort)"
+  #               -env "${{ parameters.environment }}"
+  #               -version "$(version)"
